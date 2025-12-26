@@ -36,6 +36,15 @@
         .card-gradient {
             background: linear-gradient(135deg, rgba(30, 41, 59, 0.5) 0%, rgba(15, 23, 42, 0.5) 100%);
         }
+
+        .status-badge {
+            transition: transform 0.2s;
+            cursor: help;
+        }
+        
+        .status-badge:hover {
+            transform: scale(1.05);
+        }
     </style>
 </head>
 <body class="min-h-screen pb-12">
@@ -46,7 +55,8 @@
                 <div class="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center font-bold text-white italic">F</div>
                 <h1 class="text-xl font-bold tracking-tight">FFUF <span class="text-blue-500">Cleaner</span></h1>
             </div>
-            <div class="flex gap-2">
+            <div class="flex gap-4 items-center">
+                <span class="text-xs text-slate-500 hidden md:block">v1.2 - Soporte de Códigos HTTP</span>
                 <button id="clearBtn" class="text-sm text-slate-400 hover:text-white transition px-3 py-1">Limpiar todo</button>
             </div>
         </div>
@@ -69,6 +79,26 @@
             </div>
         </section>
 
+        <!-- Guía de Códigos de Estado (Nueva Sección) -->
+        <section id="statusGuide" class="mb-8 grid grid-cols-2 md:grid-cols-4 gap-3 text-[11px]">
+            <div class="p-3 rounded-xl border border-green-500/20 bg-green-500/5">
+                <span class="font-bold text-green-400 block mb-1">2xx - ÉXITO</span>
+                <p class="text-slate-400 leading-tight">El recurso existe y es accesible. Es el objetivo principal.</p>
+            </div>
+            <div class="p-3 rounded-xl border border-blue-500/20 bg-blue-500/5">
+                <span class="font-bold text-blue-400 block mb-1">3xx - REDIRECCIÓN</span>
+                <p class="text-slate-400 leading-tight">Mueve a otra URL. Útil para encontrar paneles de login o nuevas rutas.</p>
+            </div>
+            <div class="p-3 rounded-xl border border-yellow-500/20 bg-yellow-500/5">
+                <span class="font-bold text-yellow-400 block mb-1">4xx - CLIENTE / PROHIBIDO</span>
+                <p class="text-slate-400 leading-tight">403 (Prohibido) o 401 (Auth). Puede indicar áreas restringidas interesantes.</p>
+            </div>
+            <div class="p-3 rounded-xl border border-red-500/20 bg-red-500/5">
+                <span class="font-bold text-red-400 block mb-1">5xx - ERROR SERVIDOR</span>
+                <p class="text-slate-400 leading-tight">El servidor falló. Podría indicar vulnerabilidades de inyección o mal manejo.</p>
+            </div>
+        </section>
+
         <!-- Dashboard de Resultados -->
         <div id="dashboard" class="hidden animate-in fade-in duration-500">
             <!-- Info General -->
@@ -77,7 +107,7 @@
                     <p class="text-slate-500 text-xs font-bold uppercase tracking-wider mb-1">Comando Ejecutado</p>
                     <code id="infoCommand" class="text-blue-400 text-xs break-all line-clamp-2 hover:line-clamp-none transition-all cursor-pointer"></code>
                 </div>
-                <div class="p-4 rounded-2xl border border-slate-800 bg-slate-900/40 card-gradient">
+                <div class="p-4 rounded-2xl border border-slate-800 bg-slate-900/40 card-gradient text-center">
                     <p class="text-slate-500 text-xs font-bold uppercase tracking-wider mb-1">Total Resultados</p>
                     <p id="infoTotal" class="text-2xl font-bold text-white">0</p>
                 </div>
@@ -88,31 +118,30 @@
             </div>
 
             <div class="flex flex-col lg:flex-row gap-8">
-                <!-- Lista de Hallazgos (Lado Izquierdo) -->
+                <!-- Lista de Hallazgos -->
                 <div class="lg:w-2/3">
                     <div class="flex items-center justify-between mb-4">
                         <h2 class="text-lg font-bold flex items-center gap-2">
-                            Hallazgos Útiles
+                            Resultados Filtrados
                             <span id="resultsCount" class="bg-slate-800 text-slate-400 text-xs px-2 py-0.5 rounded-full">0</span>
                         </h2>
-                        <div id="filterContainer" class="flex gap-2">
-                            <!-- Filtros dinámicos aquí -->
-                        </div>
                     </div>
 
                     <div id="findingsContainer" class="grid gap-3">
-                        <!-- Tarjetas de resultados aquí -->
+                        <!-- Tarjetas de resultados -->
                     </div>
                 </div>
 
-                <!-- JSON Crudo (Lado Derecho) -->
+                <!-- JSON Técnico y Detalles -->
                 <div class="lg:w-1/3">
-                    <div class="sticky top-24">
-                        <div class="flex items-center justify-between mb-4">
-                            <h2 class="text-lg font-bold">JSON Técnico</h2>
-                            <button id="copyBtn" class="text-xs bg-slate-800 hover:bg-slate-700 text-slate-300 px-3 py-1.5 rounded-lg transition">Copiar JSON</button>
+                    <div class="sticky top-24 space-y-6">
+                        <div>
+                            <div class="flex items-center justify-between mb-4">
+                                <h2 class="text-lg font-bold">Resumen Técnico</h2>
+                                <button id="copyBtn" class="text-xs bg-slate-800 hover:bg-slate-700 text-slate-300 px-3 py-1.5 rounded-lg transition">Copiar JSON</button>
+                            </div>
+                            <pre id="jsonOutput" class="w-full h-[500px] p-4 bg-slate-950 border border-slate-800 rounded-2xl overflow-auto code-font text-[11px] custom-scrollbar shadow-2xl"></pre>
                         </div>
-                        <pre id="jsonOutput" class="w-full h-[600px] p-4 bg-slate-950 border border-slate-800 rounded-2xl overflow-auto code-font text-[11px] custom-scrollbar"></pre>
                     </div>
                 </div>
             </div>
@@ -123,7 +152,7 @@
                 <svg class="w-16 h-16 mx-auto mb-4 opacity-20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4"></path>
                 </svg>
-                Esperando datos para analizar...
+                Pega la salida JSON de FFUF para ver los detalles.
             </div>
         </div>
     </main>
@@ -135,7 +164,23 @@
         const findingsContainer = document.getElementById('findingsContainer');
         const dashboard = document.getElementById('dashboard');
         const emptyState = document.getElementById('emptyState');
-        const filterContainer = document.getElementById('filterContainer');
+
+        const HTTP_DESCRIPTIONS = {
+            200: "OK: Recurso encontrado.",
+            201: "Created: Recurso creado exitosamente.",
+            204: "No Content: Éxito, pero sin cuerpo de respuesta.",
+            301: "Moved Permanently: Redirección permanente.",
+            302: "Found: Redirección temporal.",
+            307: "Temporary Redirect: Redirección sin cambiar método HTTP.",
+            400: "Bad Request: Solicitud malformada.",
+            401: "Unauthorized: Requiere autenticación.",
+            403: "Forbidden: Acceso denegado (interesante).",
+            404: "Not Found: No encontrado.",
+            405: "Method Not Allowed: Método no permitido.",
+            500: "Internal Server Error: Error genérico del servidor.",
+            502: "Bad Gateway: Error de comunicación entre servidores.",
+            503: "Service Unavailable: Servidor sobrecargado o en mantenimiento."
+        };
 
         function syntaxHighlight(json) {
             json = json.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
@@ -151,37 +196,41 @@
         }
 
         function getStatusInfo(status) {
-            if (status >= 200 && status < 300) return { color: 'text-green-400', bg: 'bg-green-400/10', border: 'border-green-400/20' };
-            if (status >= 300 && status < 400) return { color: 'text-blue-400', bg: 'bg-blue-400/10', border: 'border-blue-400/20' };
-            if (status >= 400 && status < 500) return { color: 'text-yellow-400', bg: 'bg-yellow-400/10', border: 'border-yellow-400/20' };
-            return { color: 'text-red-400', bg: 'bg-red-400/10', border: 'border-red-400/20' };
+            const desc = HTTP_DESCRIPTIONS[status] || "Código HTTP estándar.";
+            if (status >= 200 && status < 300) return { color: 'text-green-400', bg: 'bg-green-400/10', border: 'border-green-400/20', desc };
+            if (status >= 300 && status < 400) return { color: 'text-blue-400', bg: 'bg-blue-400/10', border: 'border-blue-400/20', desc };
+            if (status >= 400 && status < 500) return { color: 'text-yellow-400', bg: 'bg-yellow-400/10', border: 'border-yellow-400/20', desc };
+            return { color: 'text-red-400', bg: 'bg-red-400/10', border: 'border-red-400/20', desc };
         }
 
         function renderFindings(results) {
             findingsContainer.innerHTML = '';
             
             if (!results || results.length === 0) {
-                findingsContainer.innerHTML = '<p class="text-slate-500">No se encontraron resultados en el JSON.</p>';
+                findingsContainer.innerHTML = '<p class="text-slate-500 p-8 text-center border border-dashed border-slate-800 rounded-2xl">No hay resultados que coincidan.</p>';
                 return;
             }
 
             results.forEach(res => {
-                const style = getStatusInfo(res.status);
+                const info = getStatusInfo(res.status);
                 const card = document.createElement('div');
-                card.className = `p-4 rounded-xl border ${style.border} ${style.bg} flex flex-col md:flex-row md:items-center justify-between gap-4 group hover:bg-slate-800/40 transition-all`;
+                card.className = `p-4 rounded-xl border ${info.border} ${info.bg} flex flex-col md:flex-row md:items-center justify-between gap-4 group hover:bg-slate-800/40 transition-all`;
                 
                 card.innerHTML = `
                     <div class="flex-1 min-w-0">
                         <div class="flex items-center gap-3 mb-1">
-                            <span class="font-bold ${style.color}">${res.status}</span>
-                            <span class="text-slate-500 text-xs px-2 py-0.5 bg-slate-900 rounded border border-slate-800">${res.length} bytes</span>
-                            <span class="text-slate-500 text-xs px-2 py-0.5 bg-slate-900 rounded border border-slate-800">${res.words} words</span>
+                            <div class="status-badge px-2 py-0.5 rounded text-xs font-bold ${info.bg} border ${info.border} ${info.color}" title="${info.desc}">
+                                ${res.status}
+                            </div>
+                            <span class="text-slate-500 text-[10px] font-mono px-2 py-0.5 bg-slate-900 rounded border border-slate-800 uppercase">${res.length} L</span>
+                            <span class="text-slate-500 text-[10px] font-mono px-2 py-0.5 bg-slate-900 rounded border border-slate-800 uppercase">${res.words} W</span>
+                            <span class="text-slate-600 text-[10px] italic hidden sm:inline">${info.desc.split(':')[0]}</span>
                         </div>
-                        <h3 class="font-medium text-slate-200 truncate break-all">${res.url}</h3>
+                        <h3 class="font-medium text-slate-200 truncate break-all select-all">${res.url}</h3>
                     </div>
                     <div class="flex items-center gap-2">
-                        <a href="${res.url}" target="_blank" class="p-2 bg-slate-900 hover:bg-blue-600 text-slate-400 hover:text-white rounded-lg transition-colors shadow-sm">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg>
+                        <a href="${res.url}" target="_blank" class="p-2.5 bg-slate-900 hover:bg-blue-600 text-slate-400 hover:text-white rounded-xl transition-all shadow-sm">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg>
                         </a>
                     </div>
                 `;
@@ -196,25 +245,21 @@
             try {
                 const data = JSON.parse(raw);
                 
-                // Mostrar dashboard
                 dashboard.classList.remove('hidden');
                 emptyState.classList.add('hidden');
 
-                // Info General
                 document.getElementById('infoCommand').textContent = data.commandline || 'N/A';
                 document.getElementById('infoTotal').textContent = data.results ? data.results.length : 0;
                 document.getElementById('infoFile').textContent = (data.config && data.config.outputfile) ? data.config.outputfile : '--';
                 document.getElementById('resultsCount').textContent = data.results ? data.results.length : 0;
 
-                // Renderizar hallazgos
                 renderFindings(data.results || []);
 
-                // Formatear JSON técnico
                 const formatted = JSON.stringify(data, null, 4);
                 outputArea.innerHTML = syntaxHighlight(formatted);
 
             } catch (e) {
-                alert('Error al procesar JSON: ' + e.message);
+                alert('JSON Inválido: Asegúrate de pegar el contenido completo del archivo generado por ffuf (-o output.json).');
             }
         }
 
