@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Analizador de FFUF & JSON</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500&family=Inter:wght@400;600;700&display=swap');
+        
+        body {
+            background-color: #0b0f1a;
+            color: #e2e8f0;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .code-font {
+            font-family: 'Fira Code', monospace;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #1e293b;
+            border-radius: 10px;
+        }
+
+        .json-key { color: #f87171; }
+        .json-string { color: #4ade80; }
+        .json-number { color: #60a5fa; }
+        .json-boolean { color: #fbbf24; }
+        
+        .card-gradient {
+            background: linear-gradient(135deg, rgba(30, 41, 59, 0.5) 0%, rgba(15, 23, 42, 0.5) 100%);
+        }
+    </style>
+</head>
+<body class="min-h-screen pb-12">
+    <!-- Navbar -->
+    <nav class="border-b border-slate-800 bg-slate-900/50 backdrop-blur-md sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
+            <div class="flex items-center gap-2">
+                <div class="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center font-bold text-white italic">F</div>
+                <h1 class="text-xl font-bold tracking-tight">FFUF <span class="text-blue-500">Cleaner</span></h1>
+            </div>
+            <div class="flex gap-2">
+                <button id="clearBtn" class="text-sm text-slate-400 hover:text-white transition px-3 py-1">Limpiar todo</button>
+            </div>
+        </div>
+    </nav>
+
+    <main class="max-w-7xl mx-auto px-4 mt-8">
+        <!-- Entrada Principal -->
+        <section class="mb-8">
+            <div class="relative group">
+                <textarea 
+                    id="jsonInput" 
+                    class="w-full h-32 p-4 bg-slate-900 border border-slate-800 rounded-2xl focus:ring-2 focus:ring-blue-500 focus:outline-none focus:border-transparent transition-all code-font text-sm custom-scrollbar"
+                    placeholder="Pega aquí el JSON de ffuf..."
+                ></textarea>
+                <div class="absolute bottom-4 right-4 flex gap-2">
+                    <button id="formatBtn" class="bg-blue-600 hover:bg-blue-500 text-white px-6 py-2 rounded-xl font-bold shadow-lg transition-all active:scale-95">
+                        Procesar Datos
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Dashboard de Resultados -->
+        <div id="dashboard" class="hidden animate-in fade-in duration-500">
+            <!-- Info General -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+                <div class="p-4 rounded-2xl border border-slate-800 bg-slate-900/40 card-gradient">
+                    <p class="text-slate-500 text-xs font-bold uppercase tracking-wider mb-1">Comando Ejecutado</p>
+                    <code id="infoCommand" class="text-blue-400 text-xs break-all line-clamp-2 hover:line-clamp-none transition-all cursor-pointer"></code>
+                </div>
+                <div class="p-4 rounded-2xl border border-slate-800 bg-slate-900/40 card-gradient">
+                    <p class="text-slate-500 text-xs font-bold uppercase tracking-wider mb-1">Total Resultados</p>
+                    <p id="infoTotal" class="text-2xl font-bold text-white">0</p>
+                </div>
+                <div class="p-4 rounded-2xl border border-slate-800 bg-slate-900/40 card-gradient">
+                    <p class="text-slate-500 text-xs font-bold uppercase tracking-wider mb-1">Archivo de Salida</p>
+                    <p id="infoFile" class="text-sm font-medium text-slate-300 truncate">--</p>
+                </div>
+            </div>
+
+            <div class="flex flex-col lg:flex-row gap-8">
+                <!-- Lista de Hallazgos (Lado Izquierdo) -->
+                <div class="lg:w-2/3">
+                    <div class="flex items-center justify-between mb-4">
+                        <h2 class="text-lg font-bold flex items-center gap-2">
+                            Hallazgos Útiles
+                            <span id="resultsCount" class="bg-slate-800 text-slate-400 text-xs px-2 py-0.5 rounded-full">0</span>
+                        </h2>
+                        <div id="filterContainer" class="flex gap-2">
+                            <!-- Filtros dinámicos aquí -->
+                        </div>
+                    </div>
+
+                    <div id="findingsContainer" class="grid gap-3">
+                        <!-- Tarjetas de resultados aquí -->
+                    </div>
+                </div>
+
+                <!-- JSON Crudo (Lado Derecho) -->
+                <div class="lg:w-1/3">
+                    <div class="sticky top-24">
+                        <div class="flex items-center justify-between mb-4">
+                            <h2 class="text-lg font-bold">JSON Técnico</h2>
+                            <button id="copyBtn" class="text-xs bg-slate-800 hover:bg-slate-700 text-slate-300 px-3 py-1.5 rounded-lg transition">Copiar JSON</button>
+                        </div>
+                        <pre id="jsonOutput" class="w-full h-[600px] p-4 bg-slate-950 border border-slate-800 rounded-2xl overflow-auto code-font text-[11px] custom-scrollbar"></pre>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div id="emptyState" class="py-20 text-center">
+            <div class="text-slate-700 mb-4 italic">
+                <svg class="w-16 h-16 mx-auto mb-4 opacity-20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4"></path>
+                </svg>
+                Esperando datos para analizar...
+            </div>
+        </div>
+    </main>
+
+    <script>
+        const inputArea = document.getElementById('jsonInput');
+        const outputArea = document.getElementById('jsonOutput');
+        const formatBtn = document.getElementById('formatBtn');
+        const findingsContainer = document.getElementById('findingsContainer');
+        const dashboard = document.getElementById('dashboard');
+        const emptyState = document.getElementById('emptyState');
+        const filterContainer = document.getElementById('filterContainer');
+
+        function syntaxHighlight(json) {
+            json = json.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+            return json.replace(/("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+-]?\d+)?)/g, function (match) {
+                let cls = 'json-number';
+                if (/^"/.test(match)) {
+                    cls = /:$/.test(match) ? 'json-key' : 'json-string';
+                } else if (/true|false/.test(match)) {
+                    cls = 'json-boolean';
+                }
+                return '<span class="' + cls + '">' + match + '</span>';
+            });
+        }
+
+        function getStatusInfo(status) {
+            if (status >= 200 && status < 300) return { color: 'text-green-400', bg: 'bg-green-400/10', border: 'border-green-400/20' };
+            if (status >= 300 && status < 400) return { color: 'text-blue-400', bg: 'bg-blue-400/10', border: 'border-blue-400/20' };
+            if (status >= 400 && status < 500) return { color: 'text-yellow-400', bg: 'bg-yellow-400/10', border: 'border-yellow-400/20' };
+            return { color: 'text-red-400', bg: 'bg-red-400/10', border: 'border-red-400/20' };
+        }
+
+        function renderFindings(results) {
+            findingsContainer.innerHTML = '';
+            
+            if (!results || results.length === 0) {
+                findingsContainer.innerHTML = '<p class="text-slate-500">No se encontraron resultados en el JSON.</p>';
+                return;
+            }
+
+            results.forEach(res => {
+                const style = getStatusInfo(res.status);
+                const card = document.createElement('div');
+                card.className = `p-4 rounded-xl border ${style.border} ${style.bg} flex flex-col md:flex-row md:items-center justify-between gap-4 group hover:bg-slate-800/40 transition-all`;
+                
+                card.innerHTML = `
+                    <div class="flex-1 min-w-0">
+                        <div class="flex items-center gap-3 mb-1">
+                            <span class="font-bold ${style.color}">${res.status}</span>
+                            <span class="text-slate-500 text-xs px-2 py-0.5 bg-slate-900 rounded border border-slate-800">${res.length} bytes</span>
+                            <span class="text-slate-500 text-xs px-2 py-0.5 bg-slate-900 rounded border border-slate-800">${res.words} words</span>
+                        </div>
+                        <h3 class="font-medium text-slate-200 truncate break-all">${res.url}</h3>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <a href="${res.url}" target="_blank" class="p-2 bg-slate-900 hover:bg-blue-600 text-slate-400 hover:text-white rounded-lg transition-colors shadow-sm">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg>
+                        </a>
+                    </div>
+                `;
+                findingsContainer.appendChild(card);
+            });
+        }
+
+        function processData() {
+            const raw = inputArea.value.trim();
+            if (!raw) return;
+
+            try {
+                const data = JSON.parse(raw);
+                
+                // Mostrar dashboard
+                dashboard.classList.remove('hidden');
+                emptyState.classList.add('hidden');
+
+                // Info General
+                document.getElementById('infoCommand').textContent = data.commandline || 'N/A';
+                document.getElementById('infoTotal').textContent = data.results ? data.results.length : 0;
+                document.getElementById('infoFile').textContent = (data.config && data.config.outputfile) ? data.config.outputfile : '--';
+                document.getElementById('resultsCount').textContent = data.results ? data.results.length : 0;
+
+                // Renderizar hallazgos
+                renderFindings(data.results || []);
+
+                // Formatear JSON técnico
+                const formatted = JSON.stringify(data, null, 4);
+                outputArea.innerHTML = syntaxHighlight(formatted);
+
+            } catch (e) {
+                alert('Error al procesar JSON: ' + e.message);
+            }
+        }
+
+        formatBtn.addEventListener('click', processData);
+        
+        document.getElementById('clearBtn').addEventListener('click', () => {
+            inputArea.value = '';
+            dashboard.classList.add('hidden');
+            emptyState.classList.remove('hidden');
+        });
+
+        document.getElementById('copyBtn').addEventListener('click', () => {
+            const text = outputArea.innerText;
+            const el = document.createElement('textarea');
+            el.value = text;
+            document.body.appendChild(el);
+            el.select();
+            document.execCommand('copy');
+            document.body.removeChild(el);
+            
+            const originalText = document.getElementById('copyBtn').innerText;
+            document.getElementById('copyBtn').innerText = '¡Copiado!';
+            setTimeout(() => document.getElementById('copyBtn').innerText = originalText, 2000);
+        });
+    </script>
+</body>
+</html>
