@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,7 +8,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500&family=Inter:wght@400;600;700;900&display=swap');
-        
+
         :root {
             --glass-bg: rgba(15, 23, 42, 0.4);
             --glass-border: rgba(255, 255, 255, 0.08);
@@ -61,7 +62,10 @@
         .ultra-glass::before {
             content: "";
             position: absolute;
-            top: 0; left: 0; right: 0; bottom: 0;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
             background: linear-gradient(135deg, var(--glass-highlight) 0%, transparent 40%, transparent 60%, var(--glass-highlight) 100%);
             pointer-events: none;
         }
@@ -73,41 +77,69 @@
             transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
-        .json-key { color: #fb7185; }
-        .json-string { color: #34d399; }
-        .json-number { color: #38bdf8; }
-        .json-boolean { color: #fbbf24; }
+        .json-key {
+            color: #fb7185;
+        }
+
+        .json-string {
+            color: #34d399;
+        }
+
+        .json-number {
+            color: #38bdf8;
+        }
+
+        .json-boolean {
+            color: #fbbf24;
+        }
 
         .status-pill {
             box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.5);
         }
 
         @keyframes float {
-            0% { transform: translate(0, 0); }
-            50% { transform: translate(20px, 30px); }
-            100% { transform: translate(0, 0); }
+            0% {
+                transform: translate(0, 0);
+            }
+
+            50% {
+                transform: translate(20px, 30px);
+            }
+
+            100% {
+                transform: translate(0, 0);
+            }
         }
     </style>
 </head>
+
 <body class="min-h-screen pb-12">
     <!-- Fondos Decorativos -->
     <div class="bg-glow" style="top: -10%; left: -10%; animation: float 15s infinite ease-in-out;"></div>
     <div class="bg-glow" style="bottom: -10%; right: -10%; animation: float 12s infinite ease-in-out reverse;"></div>
-    <div class="bg-glow" style="top: 40%; right: 20%; background: radial-gradient(circle, rgba(124, 58, 237, 0.1) 0%, transparent 70%);"></div>
+    <div class="bg-glow"
+        style="top: 40%; right: 20%; background: radial-gradient(circle, rgba(124, 58, 237, 0.1) 0%, transparent 70%);">
+    </div>
 
     <!-- Navbar -->
     <nav class="border-b border-white/5 ultra-glass sticky top-0 z-50">
         <div class="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
-            <div class="flex items-center gap-3">
-                <div class="w-10 h-10 bg-gradient-to-tr from-blue-600 to-indigo-600 rounded-xl flex items-center justify-center font-black text-white italic shadow-[0_0_20px_rgba(37,99,235,0.4)]">F</div>
-                <h1 class="text-xl font-black tracking-tighter uppercase italic">FFUF<span class="text-blue-500">Cleaner</span></h1>
+            <div class="flex items-center gap-3" id="XD">
+                <div id="Nicolas"
+                    class="w-10 h-10 bg-gradient-to-tr from-blue-600 to-indigo-600 rounded-xl flex items-center justify-center shadow-[0_0_20px_rgba(37,99,235,0.4)]">
+                    <img src="https://tr.rbxcdn.com/180DAY-d254896864a6f6d6ab5f1c680b68a543/150/150/Decal/Png/noFilter"
+                        alt="icono" class="w-6 h-6 object-contain">
+                </div>
+                <h1 class="text-xl font-black tracking-tighter uppercase italic">FFUF<span
+                        class="text-blue-500">Cleaner</span></h1>
             </div>
             <div class="flex gap-4 items-center">
                 <div class="hidden md:flex flex-col items-end">
                     <span class="text-[9px] font-bold tracking-[0.2em] text-blue-400 uppercase">System Active</span>
                     <span class="text-[10px] text-slate-500 font-mono">v1.4 - Crystal Edition</span>
                 </div>
-                <button id="clearBtn" class="text-xs font-bold text-slate-300 hover:text-white transition-all px-4 py-2 bg-white/5 hover:bg-red-500/20 rounded-lg border border-white/10">BORRAR</button>
+                <button id="clearBtn"
+                    class="text-xs font-bold text-slate-300 hover:text-white transition-all px-4 py-2 bg-white/5 hover:bg-red-500/20 rounded-lg border border-white/10">BORRAR</button>
             </div>
         </div>
     </nav>
@@ -116,13 +148,12 @@
         <!-- Entrada Principal -->
         <section class="mb-10">
             <div class="ultra-glass rounded-3xl p-1">
-                <textarea 
-                    id="jsonInput" 
+                <textarea id="jsonInput"
                     class="w-full h-36 p-6 bg-transparent focus:outline-none transition-all code-font text-sm custom-scrollbar placeholder-slate-700 text-blue-100"
-                    placeholder="Pega el contenido JSON de tu auditoría aquí..."
-                ></textarea>
+                    placeholder="Pega el contenido JSON de tu auditoría aquí..."></textarea>
                 <div class="p-3 flex justify-end border-t border-white/5">
-                    <button id="formatBtn" class="bg-blue-600 hover:bg-blue-500 text-white px-10 py-3 rounded-2xl font-black text-xs uppercase tracking-widest shadow-2xl shadow-blue-500/40 transition-all active:scale-95 border border-blue-400/30">
+                    <button id="formatBtn"
+                        class="bg-blue-600 hover:bg-blue-500 text-white px-10 py-3 rounded-2xl font-black text-xs uppercase tracking-widest shadow-2xl shadow-blue-500/40 transition-all active:scale-95 border border-blue-400/30">
                         Analizar Estructura
                     </button>
                 </div>
@@ -148,7 +179,8 @@
             <div class="p-5 rounded-3xl ultra-glass border-yellow-500/20">
                 <div class="flex items-center gap-2 mb-2">
                     <div class="w-2 h-2 rounded-full bg-yellow-500 shadow-[0_0_10px_rgba(234,179,8,0.8)]"></div>
-                    <span class="font-black text-[10px] text-yellow-400 tracking-tighter uppercase">4xx - Forbidden</span>
+                    <span class="font-black text-[10px] text-yellow-400 tracking-tighter uppercase">4xx -
+                        Forbidden</span>
                 </div>
                 <p class="text-slate-400 text-[11px] leading-relaxed">Áreas restringidas con protección.</p>
             </div>
@@ -167,7 +199,8 @@
             <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
                 <div class="p-6 rounded-3xl ultra-glass">
                     <p class="text-slate-500 text-[9px] font-black uppercase tracking-[0.2em] mb-3">Target Command</p>
-                    <code id="infoCommand" class="text-blue-400 text-xs font-mono break-all line-clamp-2 opacity-80 hover:opacity-100 transition-opacity"></code>
+                    <code id="infoCommand"
+                        class="text-blue-400 text-xs font-mono break-all line-clamp-2 opacity-80 hover:opacity-100 transition-opacity"></code>
                 </div>
                 <div class="p-6 rounded-3xl ultra-glass flex flex-col items-center justify-center">
                     <p class="text-slate-500 text-[9px] font-black uppercase tracking-[0.2em] mb-1">Found Elements</p>
@@ -184,7 +217,9 @@
                 <div class="lg:w-2/3 space-y-4">
                     <div class="flex items-center justify-between px-2">
                         <h2 class="text-sm font-black uppercase tracking-[0.3em] text-slate-400">Inventory</h2>
-                        <span id="resultsCount" class="bg-blue-500/10 text-blue-400 text-[10px] px-3 py-1 rounded-full border border-blue-500/20 font-black">0 ITEMS</span>
+                        <span id="resultsCount"
+                            class="bg-blue-500/10 text-blue-400 text-[10px] px-3 py-1 rounded-full border border-blue-500/20 font-black">0
+                            ITEMS</span>
                     </div>
 
                     <div id="findingsContainer" class="grid gap-4">
@@ -197,22 +232,27 @@
                     <div class="sticky top-24 space-y-4">
                         <div class="flex items-center justify-between px-2">
                             <h2 class="text-sm font-black uppercase tracking-[0.3em] text-slate-400">RAW DATA</h2>
-                            <button id="copyBtn" class="text-[10px] font-bold text-blue-400 hover:text-white transition-colors">COPY SOURCE</button>
+                            <button id="copyBtn"
+                                class="text-[10px] font-bold text-blue-400 hover:text-white transition-colors">COPY
+                                SOURCE</button>
                         </div>
                         <div class="ultra-glass rounded-3xl p-1">
-                            <pre id="jsonOutput" class="w-full h-[550px] p-6 bg-transparent overflow-auto code-font text-[10px] custom-scrollbar"></pre>
+                            <pre id="jsonOutput"
+                                class="w-full h-[550px] p-6 bg-transparent overflow-auto code-font text-[10px] custom-scrollbar"></pre>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-        
+
         <div id="emptyState" class="py-32 text-center ultra-glass rounded-[3rem] border-dashed">
             <div class="relative inline-block mb-8">
                 <div class="absolute inset-0 bg-blue-500 blur-3xl opacity-20"></div>
-                <div class="relative w-24 h-24 bg-white/5 rounded-full flex items-center justify-center mx-auto border border-white/10">
+                <div
+                    class="relative w-24 h-24 bg-white/5 rounded-full flex items-center justify-center mx-auto border border-white/10">
                     <svg class="w-10 h-10 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                            d="M13 10V3L4 14h7v7l9-11h-7z"></path>
                     </svg>
                 </div>
             </div>
@@ -263,7 +303,7 @@
                 const info = getStatusInfo(res.status);
                 const card = document.createElement('div');
                 card.className = `p-6 rounded-3xl ultra-glass ultra-glass-hover flex flex-col md:flex-row md:items-center justify-between gap-6 group`;
-                
+
                 card.innerHTML = `
                     <div class="flex-1 min-w-0">
                         <div class="flex items-center gap-4 mb-3">
@@ -320,4 +360,5 @@
         });
     </script>
 </body>
+
 </html>
