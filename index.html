@@ -1,265 +1,248 @@
 <!DOCTYPE html>
 <html lang="es">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FFUF Ghost Analyzer - Ultra Glass</title>
+    <title>FFUF Liquid Glass - Cyber Audit</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500&family=Inter:wght@400;600;700;900&display=swap');
-
+        
         :root {
-            --glass-bg: rgba(15, 23, 42, 0.4);
+            --glass-bg: rgba(255, 255, 255, 0.02);
             --glass-border: rgba(255, 255, 255, 0.08);
-            --glass-highlight: rgba(255, 255, 255, 0.05);
+            --liquid-blue: rgba(37, 99, 235, 0.4);
+            --liquid-purple: rgba(139, 92, 246, 0.4);
         }
 
         body {
-            background-color: #030712;
-            color: #f1f5f9;
+            background-color: #010409;
+            color: #f8fafc;
             font-family: 'Inter', sans-serif;
-            overflow-x: hidden;
+            background-image: 
+                radial-gradient(circle at 10% 20%, rgba(37, 99, 235, 0.1) 0%, transparent 40%),
+                radial-gradient(circle at 90% 80%, rgba(139, 92, 246, 0.1) 0%, transparent 40%);
             background-attachment: fixed;
+            overflow-x: hidden;
         }
 
-        /* Orbes de fondo para el efecto glass */
-        .bg-glow {
-            position: fixed;
-            width: 500px;
-            height: 500px;
-            border-radius: 50%;
-            background: radial-gradient(circle, rgba(37, 99, 235, 0.15) 0%, transparent 70%);
-            z-index: -1;
-            filter: blur(80px);
-        }
-
-        .code-font {
-            font-family: 'Fira Code', monospace;
-        }
-
-        .custom-scrollbar::-webkit-scrollbar {
-            width: 5px;
-            height: 5px;
-        }
-
-        .custom-scrollbar::-webkit-scrollbar-thumb {
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 10px;
-        }
-
-        /* Ultra Glass Morphism */
-        .ultra-glass {
+        /* Efecto Liquid Glass principal */
+        .liquid-glass {
             background: var(--glass-bg);
-            backdrop-filter: blur(25px) saturate(180%);
-            -webkit-backdrop-filter: blur(25px) saturate(180%);
+            backdrop-filter: blur(24px) saturate(180%);
+            -webkit-backdrop-filter: blur(24px) saturate(180%);
             border: 1px solid var(--glass-border);
-            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.8);
             position: relative;
             overflow: hidden;
+            border-radius: 1.5rem;
+            box-shadow: 
+                0 4px 24px -1px rgba(0, 0, 0, 0.5),
+                inset 0 1px 1px rgba(255, 255, 255, 0.1);
         }
 
-        .ultra-glass::before {
-            content: "";
+        .liquid-glass::before {
+            content: '';
             position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: linear-gradient(135deg, var(--glass-highlight) 0%, transparent 40%, transparent 60%, var(--glass-highlight) 100%);
+            top: -50%; left: -50%; width: 200%; height: 200%;
+            background: linear-gradient(135deg, rgba(255,255,255,0.05) 0%, transparent 50%, rgba(255,255,255,0.05) 100%);
             pointer-events: none;
+            transition: transform 0.6s ease;
         }
 
-        .ultra-glass-hover:hover {
-            background: rgba(30, 41, 59, 0.5);
+        .liquid-glass:hover::before {
+            transform: translate(5%, 5%);
+        }
+
+        /* Botones con efecto de fluido */
+        .liquid-button {
+            background: linear-gradient(135deg, #1d4ed8, #7c3aed);
+            position: relative;
+            z-index: 1;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 8px 16px -4px rgba(29, 78, 216, 0.5);
+        }
+
+        .liquid-button:hover {
             transform: translateY(-2px);
-            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 12px 24px -4px rgba(29, 78, 216, 0.6);
+            filter: brightness(1.1);
         }
 
-        .json-key {
-            color: #fb7185;
+        .liquid-button:active {
+            transform: translateY(0);
         }
 
-        .json-string {
-            color: #34d399;
+        /* Scrollbar personalizado */
+        .custom-scrollbar::-webkit-scrollbar { width: 5px; height: 5px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
         }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.2); }
 
-        .json-number {
-            color: #38bdf8;
-        }
+        .code-font { font-family: 'Fira Code', monospace; }
 
-        .json-boolean {
-            color: #fbbf24;
-        }
+        /* Resaltado de sintaxis JSON */
+        .json-key { color: #f472b6; font-weight: 500; }
+        .json-string { color: #10b981; }
+        .json-number { color: #3b82f6; }
+        .json-boolean { color: #f59e0b; }
 
-        .status-pill {
-            box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.5);
-        }
-
+        /* Animación de orbes de fondo */
         @keyframes float {
-            0% {
-                transform: translate(0, 0);
-            }
+            0% { transform: translate(0, 0) scale(1); }
+            50% { transform: translate(2% , 5%) scale(1.05); }
+            100% { transform: translate(0, 0) scale(1); }
+        }
 
-            50% {
-                transform: translate(20px, 30px);
-            }
+        .bg-orb {
+            position: fixed;
+            border-radius: 50%;
+            filter: blur(80px);
+            z-index: -1;
+            animation: float 10s infinite ease-in-out;
+            opacity: 0.15;
+        }
 
-            100% {
-                transform: translate(0, 0);
-            }
+        /* Estilos de badges */
+        .badge-glass {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(4px);
         }
     </style>
 </head>
+<body class="min-h-screen p-4 md:p-8">
 
-<body class="min-h-screen pb-12">
-    <!-- Fondos Decorativos -->
-    <div class="bg-glow" style="top: -10%; left: -10%; animation: float 15s infinite ease-in-out;"></div>
-    <div class="bg-glow" style="bottom: -10%; right: -10%; animation: float 12s infinite ease-in-out reverse;"></div>
-    <div class="bg-glow"
-        style="top: 40%; right: 20%; background: radial-gradient(circle, rgba(124, 58, 237, 0.1) 0%, transparent 70%);">
-    </div>
+    <!-- Elementos de fondo -->
+    <div class="bg-orb w-[500px] h-[500px] bg-blue-600 top-[-10%] left-[-10%]"></div>
+    <div class="bg-orb w-[400px] h-[400px] bg-purple-600 bottom-[-5%] right-[-5%] animate-delay-2000"></div>
 
-    <!-- Navbar -->
-    <nav class="border-b border-white/5 ultra-glass sticky top-0 z-50">
-        <div class="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
-            <div class="flex items-center gap-3" id="XD">
-                <div id="Nicolas"
-                    class="w-10 h-10 bg-gradient-to-tr from-blue-600 to-indigo-600 rounded-xl flex items-center justify-center shadow-[0_0_20px_rgba(37,99,235,0.4)]">
-                    <img src="https://tr.rbxcdn.com/180DAY-d254896864a6f6d6ab5f1c680b68a543/150/150/Decal/Png/noFilter"
-                        alt="icono" class="w-6 h-6 object-contain">
+    <div class="max-w-7xl mx-auto space-y-8 relative z-10">
+        
+        <!-- Header -->
+        <header class="liquid-glass p-5 md:p-8 flex flex-col md:flex-row items-center justify-between gap-6">
+            <div class="flex items-center gap-5">
+                <div class="w-14 h-14 liquid-button rounded-2xl flex items-center justify-center text-white text-3xl font-black italic"><img src="https://tr.rbxcdn.com/180DAY-d254896864a6f6d6ab5f1c680b68a543/150/150/Decal/Png/noFilter"
+                        alt="icono" class="w-6 h-6 object-contain"></div>
+                <div>
+                    <h1 class="text-3xl font-black tracking-tighter uppercase leading-none italic">FFUF <span class="text-blue-500">LIQUID</span></h1>
+                    <p class="text-[9px] tracking-[0.4em] font-bold text-slate-500 uppercase mt-2">Cyber Audit Visualization Interface</p>
                 </div>
-                <h1 class="text-xl font-black tracking-tighter uppercase italic">FFUF<span
-                        class="text-blue-500">Cleaner</span></h1>
             </div>
-            <div class="flex gap-4 items-center">
-                <div class="hidden md:flex flex-col items-end">
-                    <span class="text-[9px] font-bold tracking-[0.2em] text-blue-400 uppercase">System Active</span>
-                    <span class="text-[10px] text-slate-500 font-mono">v1.4 - Crystal Edition</span>
-                </div>
-                <button id="clearBtn"
-                    class="text-xs font-bold text-slate-300 hover:text-white transition-all px-4 py-2 bg-white/5 hover:bg-red-500/20 rounded-lg border border-white/10">BORRAR</button>
+            <div class="flex gap-4">
+                <button id="clearBtn" class="px-6 py-2.5 text-[10px] font-black uppercase tracking-widest text-slate-400 hover:text-white transition-all bg-white/5 hover:bg-white/10 rounded-xl border border-white/5">Limpiar</button>
             </div>
-        </div>
-    </nav>
+        </header>
 
-    <main class="max-w-7xl mx-auto px-4 mt-8">
-        <!-- Entrada Principal -->
-        <section class="mb-10">
-            <div class="ultra-glass rounded-3xl p-1">
-                <textarea id="jsonInput"
-                    class="w-full h-36 p-6 bg-transparent focus:outline-none transition-all code-font text-sm custom-scrollbar placeholder-slate-700 text-blue-100"
-                    placeholder="Pega el contenido JSON de tu auditoría aquí..."></textarea>
-                <div class="p-3 flex justify-end border-t border-white/5">
-                    <button id="formatBtn"
-                        class="bg-blue-600 hover:bg-blue-500 text-white px-10 py-3 rounded-2xl font-black text-xs uppercase tracking-widest shadow-2xl shadow-blue-500/40 transition-all active:scale-95 border border-blue-400/30">
-                        Analizar Estructura
-                    </button>
-                </div>
+        <!-- Input Section -->
+        <section class="liquid-glass p-2">
+            <textarea 
+                id="jsonInput" 
+                class="w-full h-36 p-6 bg-transparent focus:outline-none transition-all code-font text-sm custom-scrollbar placeholder-slate-600 text-blue-100"
+                placeholder="Pega el contenido JSON de FFUF aquí..."
+            ></textarea>
+            <div class="p-4 flex justify-end border-t border-white/5">
+                <button id="formatBtn" class="liquid-button text-white px-10 py-3.5 rounded-2xl font-black text-xs uppercase tracking-[0.2em] active:scale-95">
+                    Procesar Auditoría
+                </button>
             </div>
         </section>
 
-        <!-- Guía de Códigos de Estado -->
-        <section id="statusGuide" class="mb-10 grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div class="p-5 rounded-3xl ultra-glass border-green-500/20 group">
-                <div class="flex items-center gap-2 mb-2">
-                    <div class="w-2 h-2 rounded-full bg-green-500 shadow-[0_0_10px_rgba(34,197,94,0.8)]"></div>
-                    <span class="font-black text-[10px] text-green-400 tracking-tighter uppercase">2xx - Success</span>
+        <!-- Glossary con Glassmorfismo -->
+        <section id="statusGuide" class="grid grid-cols-2 lg:grid-cols-4 gap-5">
+            <div class="liquid-glass p-6 group hover:border-green-500/30 transition-all">
+                <div class="flex items-center gap-3 mb-3">
+                    <div class="w-2 h-2 rounded-full bg-green-500 shadow-[0_0_10px_rgba(34,197,94,0.6)]"></div>
+                    <span class="text-[10px] font-black text-green-400 uppercase tracking-[0.15em]">2xx Éxito</span>
                 </div>
-                <p class="text-slate-400 text-[11px] leading-relaxed">Puntos de entrada válidos confirmados.</p>
+                <p class="text-slate-500 text-[11px] leading-relaxed">Recursos accesibles. Confirmación de directorios o archivos.</p>
             </div>
-            <div class="p-5 rounded-3xl ultra-glass border-blue-500/20">
-                <div class="flex items-center gap-2 mb-2">
-                    <div class="w-2 h-2 rounded-full bg-blue-500 shadow-[0_0_10px_rgba(59,130,246,0.8)]"></div>
-                    <span class="font-black text-[10px] text-blue-400 tracking-tighter uppercase">3xx - Redirect</span>
+            <div class="liquid-glass p-6 group hover:border-blue-500/30 transition-all">
+                <div class="flex items-center gap-3 mb-3">
+                    <div class="w-2 h-2 rounded-full bg-blue-500 shadow-[0_0_10px_rgba(59,130,246,0.6)]"></div>
+                    <span class="text-[10px] font-black text-blue-400 uppercase tracking-[0.15em]">3xx Redir</span>
                 </div>
-                <p class="text-slate-400 text-[11px] leading-relaxed">Posibles fugas de ruta o paneles.</p>
+                <p class="text-slate-500 text-[11px] leading-relaxed">Redirecciones de ruta. Indican posibles paneles o áreas movidas.</p>
             </div>
-            <div class="p-5 rounded-3xl ultra-glass border-yellow-500/20">
-                <div class="flex items-center gap-2 mb-2">
-                    <div class="w-2 h-2 rounded-full bg-yellow-500 shadow-[0_0_10px_rgba(234,179,8,0.8)]"></div>
-                    <span class="font-black text-[10px] text-yellow-400 tracking-tighter uppercase">4xx -
-                        Forbidden</span>
+            <div class="liquid-glass p-6 group hover:border-yellow-500/30 transition-all">
+                <div class="flex items-center gap-3 mb-3">
+                    <div class="w-2 h-2 rounded-full bg-yellow-500 shadow-[0_0_10px_rgba(234,179,8,0.6)]"></div>
+                    <span class="text-[10px] font-black text-yellow-400 uppercase tracking-[0.15em]">4xx Prohib</span>
                 </div>
-                <p class="text-slate-400 text-[11px] leading-relaxed">Áreas restringidas con protección.</p>
+                <p class="text-slate-500 text-[11px] leading-relaxed">Acceso prohibido o no encontrado. Interesante para bypass.</p>
             </div>
-            <div class="p-5 rounded-3xl ultra-glass border-red-500/20">
-                <div class="flex items-center gap-2 mb-2">
-                    <div class="w-2 h-2 rounded-full bg-red-500 shadow-[0_0_10px_rgba(239,68,68,0.8)]"></div>
-                    <span class="font-black text-[10px] text-red-400 tracking-tighter uppercase">5xx - Critical</span>
+            <div class="liquid-glass p-6 group hover:border-red-500/30 transition-all">
+                <div class="flex items-center gap-3 mb-3">
+                    <div class="w-2 h-2 rounded-full bg-red-500 shadow-[0_0_10px_rgba(239,68,68,0.6)]"></div>
+                    <span class="text-[10px] font-black text-red-400 uppercase tracking-[0.15em]">5xx Error</span>
                 </div>
-                <p class="text-slate-400 text-[11px] leading-relaxed">Fallo del servicio. Vector de DoS.</p>
+                <p class="text-slate-500 text-[11px] leading-relaxed">Inestabilidad del servidor. Puede indicar fallos de lógica.</p>
             </div>
         </section>
 
-        <!-- Dashboard de Resultados -->
-        <div id="dashboard" class="hidden space-y-8 animate-in fade-in slide-in-from-bottom-5 duration-700">
-            <!-- Info General -->
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
-                <div class="p-6 rounded-3xl ultra-glass">
-                    <p class="text-slate-500 text-[9px] font-black uppercase tracking-[0.2em] mb-3">Target Command</p>
-                    <code id="infoCommand"
-                        class="text-blue-400 text-xs font-mono break-all line-clamp-2 opacity-80 hover:opacity-100 transition-opacity"></code>
+        <!-- Main Dashboard -->
+        <div id="dashboard" class="hidden space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
+            <!-- Stats -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="liquid-glass p-6 flex flex-col justify-center">
+                    <p class="text-[9px] font-black uppercase tracking-[0.2em] text-slate-500 mb-3">Auditoría Objetivo</p>
+                    <p id="infoCommand" class="text-blue-400 text-xs font-mono truncate bg-black/20 p-2 rounded-lg border border-white/5"></p>
                 </div>
-                <div class="p-6 rounded-3xl ultra-glass flex flex-col items-center justify-center">
-                    <p class="text-slate-500 text-[9px] font-black uppercase tracking-[0.2em] mb-1">Found Elements</p>
-                    <p id="infoTotal" class="text-4xl font-black text-white tracking-tighter">0</p>
+                <div class="liquid-glass p-6 text-center py-8">
+                    <p class="text-[9px] font-black uppercase tracking-[0.2em] text-slate-500 mb-1">Total Hallazgos</p>
+                    <p id="infoTotal" class="text-5xl font-black text-white italic tracking-tighter">0</p>
                 </div>
-                <div class="p-6 rounded-3xl ultra-glass">
-                    <p class="text-slate-500 text-[9px] font-black uppercase tracking-[0.2em] mb-3">Output Storage</p>
-                    <p id="infoFile" class="text-sm font-bold text-slate-300 truncate italic">--</p>
+                <div class="liquid-glass p-6 flex flex-col justify-center">
+                    <p class="text-[9px] font-black uppercase tracking-[0.2em] text-slate-500 mb-3">Archivo de Salida</p>
+                    <p id="infoFile" class="text-xs font-bold text-slate-300 italic truncate"></p>
                 </div>
             </div>
 
-            <div class="flex flex-col lg:flex-row gap-8">
-                <!-- Lista de Hallazgos -->
-                <div class="lg:w-2/3 space-y-4">
-                    <div class="flex items-center justify-between px-2">
-                        <h2 class="text-sm font-black uppercase tracking-[0.3em] text-slate-400">Inventory</h2>
-                        <span id="resultsCount"
-                            class="bg-blue-500/10 text-blue-400 text-[10px] px-3 py-1 rounded-full border border-blue-500/20 font-black">0
-                            ITEMS</span>
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                <!-- Findings List -->
+                <div class="lg:col-span-7 space-y-4">
+                    <div class="flex items-center justify-between px-3">
+                        <h2 class="text-[11px] font-black uppercase tracking-[0.3em] text-slate-400 italic">Resultados</h2>
+                        <span id="resultsCount" class="badge-glass text-blue-400 text-[9px] px-3 py-1 rounded-full font-black">0 ITEMS</span>
                     </div>
-
                     <div id="findingsContainer" class="grid gap-4">
-                        <!-- Tarjetas inyectadas -->
+                        <!-- Tarjetas inyectadas dinámicamente -->
                     </div>
                 </div>
 
-                <!-- JSON Técnico -->
-                <div class="lg:w-1/3">
+                <!-- Code View -->
+                <div class="lg:col-span-5">
                     <div class="sticky top-24 space-y-4">
-                        <div class="flex items-center justify-between px-2">
-                            <h2 class="text-sm font-black uppercase tracking-[0.3em] text-slate-400">RAW DATA</h2>
-                            <button id="copyBtn"
-                                class="text-[10px] font-bold text-blue-400 hover:text-white transition-colors">COPY
-                                SOURCE</button>
+                        <div class="flex items-center justify-between px-3">
+                            <h2 class="text-[11px] font-black uppercase tracking-[0.3em] text-slate-400 italic">Datos RAW</h2>
+                            <button id="copyBtn" class="text-[10px] font-bold text-blue-400 hover:text-white transition-all uppercase tracking-widest">Copiar</button>
                         </div>
-                        <div class="ultra-glass rounded-3xl p-1">
-                            <pre id="jsonOutput"
-                                class="w-full h-[550px] p-6 bg-transparent overflow-auto code-font text-[10px] custom-scrollbar"></pre>
+                        <div class="liquid-glass p-1">
+                            <pre id="jsonOutput" class="w-full h-[600px] p-6 overflow-auto code-font text-[10px] custom-scrollbar text-blue-200/70 bg-transparent"></pre>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
 
-        <div id="emptyState" class="py-32 text-center ultra-glass rounded-[3rem] border-dashed">
+        <!-- Empty State -->
+        <div id="emptyState" class="py-40 text-center liquid-glass">
             <div class="relative inline-block mb-8">
-                <div class="absolute inset-0 bg-blue-500 blur-3xl opacity-20"></div>
-                <div
-                    class="relative w-24 h-24 bg-white/5 rounded-full flex items-center justify-center mx-auto border border-white/10">
-                    <svg class="w-10 h-10 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
-                            d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                <div class="absolute inset-0 bg-blue-500 blur-[60px] opacity-20 animate-pulse"></div>
+                <div class="relative w-24 h-24 bg-white/5 rounded-3xl flex items-center justify-center mx-auto border border-white/10 shadow-inner">
+                    <svg class="w-10 h-10 text-blue-500 opacity-60" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7"></path>
                     </svg>
                 </div>
             </div>
-            <p class="text-slate-500 font-black text-xs uppercase tracking-[0.4em]">Engine Standby</p>
-            <p class="text-slate-600 text-sm mt-2">Introduce un archivo JSON válido para iniciar el renderizado.</p>
+            <p class="text-slate-500 font-black text-[11px] uppercase tracking-[0.5em]">Motor en Espera</p>
+            <p class="text-slate-600 text-xs mt-3">Introduce la salida JSON para iniciar el procesamiento visual.</p>
         </div>
-    </main>
+
+    </div>
 
     <script>
         const inputArea = document.getElementById('jsonInput');
@@ -268,13 +251,6 @@
         const findingsContainer = document.getElementById('findingsContainer');
         const dashboard = document.getElementById('dashboard');
         const emptyState = document.getElementById('emptyState');
-
-        const HTTP_DESCRIPTIONS = {
-            200: "OK", 201: "Created", 204: "No Content",
-            301: "Perm. Redirect", 302: "Temp. Redirect",
-            400: "Bad Request", 401: "Unauthorized", 403: "Forbidden", 404: "Not Found",
-            500: "Server Error", 503: "Unavailable"
-        };
 
         function syntaxHighlight(json) {
             json = json.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
@@ -290,38 +266,33 @@
         }
 
         function getStatusInfo(status) {
-            const desc = HTTP_DESCRIPTIONS[status] || "HTTP Status";
-            if (status >= 200 && status < 300) return { color: 'text-green-400', border: 'border-green-500/30', bg: 'bg-green-500/5', desc };
-            if (status >= 300 && status < 400) return { color: 'text-blue-400', border: 'border-blue-500/30', bg: 'bg-blue-500/5', desc };
-            if (status >= 400 && status < 500) return { color: 'text-yellow-400', border: 'border-yellow-500/30', bg: 'bg-yellow-500/5', desc };
-            return { color: 'text-red-400', border: 'border-red-500/30', bg: 'bg-red-500/5', desc };
+            if (status >= 200 && status < 300) return { color: 'text-green-400', border: 'border-green-500/20', bg: 'bg-green-500/10' };
+            if (status >= 300 && status < 400) return { color: 'text-blue-400', border: 'border-blue-500/20', bg: 'bg-blue-500/10' };
+            if (status >= 400 && status < 500) return { color: 'text-yellow-400', border: 'border-yellow-500/20', bg: 'bg-yellow-500/10' };
+            return { color: 'text-red-400', border: 'border-red-500/20', bg: 'bg-red-500/10' };
         }
 
         function renderFindings(results) {
             findingsContainer.innerHTML = '';
-            results.forEach(res => {
+            results.forEach((res, index) => {
                 const info = getStatusInfo(res.status);
                 const card = document.createElement('div');
-                card.className = `p-6 rounded-3xl ultra-glass ultra-glass-hover flex flex-col md:flex-row md:items-center justify-between gap-6 group`;
-
+                card.className = `liquid-glass p-6 flex flex-col md:flex-row items-center justify-between gap-6 hover:translate-x-1 group transition-all duration-300`;
+                
                 card.innerHTML = `
                     <div class="flex-1 min-w-0">
                         <div class="flex items-center gap-4 mb-3">
-                            <div class="status-pill px-3 py-1 rounded-xl text-xs font-black ${info.color} ${info.bg} border ${info.border}">
-                                ${res.status}
-                            </div>
+                            <span class="px-3 py-1 rounded-xl text-[10px] font-black ${info.color} ${info.bg} border ${info.border} shadow-inner">${res.status}</span>
                             <div class="flex gap-2">
-                                <span class="text-[9px] font-bold text-slate-500 uppercase tracking-widest">${res.length} bytes</span>
-                                <span class="text-[9px] font-bold text-slate-500 uppercase tracking-widest">${res.words} words</span>
+                                <span class="badge-glass text-[9px] font-bold text-slate-500 px-2 py-0.5 rounded-lg uppercase tracking-tighter">${res.length} BYTES</span>
+                                <span class="badge-glass text-[9px] font-bold text-slate-500 px-2 py-0.5 rounded-lg uppercase tracking-tighter">${res.words} WORDS</span>
                             </div>
                         </div>
-                        <h3 class="font-bold text-slate-100 truncate break-all select-all tracking-tight text-sm">${res.url}</h3>
+                        <h3 class="font-bold text-slate-100 truncate text-sm select-all tracking-tight">${res.url}</h3>
                     </div>
-                    <div>
-                        <a href="${res.url}" target="_blank" class="w-12 h-12 flex items-center justify-center bg-white/5 hover:bg-blue-600/30 text-slate-400 hover:text-white rounded-2xl transition-all border border-white/10">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg>
-                        </a>
-                    </div>
+                    <a href="${res.url}" target="_blank" class="w-12 h-12 flex items-center justify-center bg-white/5 hover:bg-blue-600/40 text-slate-400 hover:text-white rounded-2xl transition-all border border-white/10 shadow-lg">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg>
+                    </a>
                 `;
                 findingsContainer.appendChild(card);
             });
@@ -329,17 +300,24 @@
 
         formatBtn.addEventListener('click', () => {
             try {
-                const data = JSON.parse(inputArea.value.trim());
+                const rawData = inputArea.value.trim();
+                if(!rawData) return;
+                const data = JSON.parse(rawData);
+                
                 dashboard.classList.remove('hidden');
                 emptyState.classList.add('hidden');
-                document.getElementById('infoCommand').textContent = data.commandline || 'N/A';
+                
+                document.getElementById('infoCommand').textContent = data.commandline || 'FFUF Scan';
                 document.getElementById('infoTotal').textContent = data.results?.length || 0;
-                document.getElementById('infoFile').textContent = data.config?.outputfile || 'N/A';
+                document.getElementById('infoFile').textContent = data.config?.outputfile || 'Memory Stream';
                 document.getElementById('resultsCount').textContent = `${data.results?.length || 0} ITEMS`;
+                
                 renderFindings(data.results || []);
                 outputArea.innerHTML = syntaxHighlight(JSON.stringify(data, null, 4));
+                
+                window.scrollTo({ top: dashboard.offsetTop - 50, behavior: 'smooth' });
             } catch (e) {
-                alert('Error de sintaxis: El JSON no es válido.');
+                alert('Error de formato: El texto no parece ser un JSON válido de FFUF.');
             }
         });
 
@@ -347,6 +325,7 @@
             inputArea.value = '';
             dashboard.classList.add('hidden');
             emptyState.classList.remove('hidden');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
         });
 
         document.getElementById('copyBtn').addEventListener('click', () => {
@@ -356,9 +335,16 @@
             el.select();
             document.execCommand('copy');
             document.body.removeChild(el);
-            alert('Copiado al portapapeles');
+            
+            const btn = document.getElementById('copyBtn');
+            const originalText = btn.innerText;
+            btn.innerText = 'COPIADO';
+            btn.classList.add('text-green-400');
+            setTimeout(() => {
+                btn.innerText = originalText;
+                btn.classList.remove('text-green-400');
+            }, 2000);
         });
     </script>
 </body>
-
 </html>
